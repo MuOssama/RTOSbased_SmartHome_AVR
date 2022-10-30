@@ -1,0 +1,40 @@
+#define F_CPU 8000000UL
+#include <avr/delay.h>
+#include <avr/io.h>
+#include "MCAL/DIO/DIO_INTERFACE.H"
+#include "MCAL/ADC/ADC_INTERFACE.h"
+#include "MCAL/ADC/ADC_REG.h"
+#include "MCAL/EXTI/EXT_INTERRUPT_INTERFACE.h"
+#include "HAL/CLCD 1602/CLCD_INTERFACE.h"
+#include "MCAL/TIMER/TIMER_INTERFACE.h"
+#include "MCAL/UART/UART_INTERFACE.h"
+#include "MCAL/SPI/SPI_INTERFACE.h"
+#include "MCAL/Timer/TIMER_INTERFACE.h"
+#include "MCAL/Timer/TIMER_REG.h"
+#include "HAL/SHIFT_REGISTER/SHIFT_REGISTER_INTERFACE.h"
+
+u8  latch = 7,data= 6,clk=5;
+int () {
+	DIO_SetPort_Direction(0,1);
+	DIO_SetPin_Direction(3,5,1);
+	DIO_SetPin_Direction(3,6,1);
+	DIO_SetPin_Direction(3,7,1);
+
+
+	while (1) {
+	    Shift(3,7,6,5,(unsigned int)0b0110000001111111);
+	    _delay_ms(1);
+	    Shift(3,7,6,5,(unsigned int)0b1101101010111111);
+	    _delay_ms(1);
+	    Shift(3,7,6,5,(unsigned int)0b1111111011011111);
+	    _delay_ms(1);
+	    Shift(3,7,6,5,(unsigned int)0b1111111011101111);
+	    _delay_ms(1);
+
+
+
+
+
+
+	}
+}

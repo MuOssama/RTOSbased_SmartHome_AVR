@@ -260,6 +260,12 @@ int main() {
     	//Temperature
         if(lm35_reading > MAX_TEMP){
         	BuzzerTOGGLE(1000);
+        	DIO_SetPin_Value(GroupB,PIN2,HIGH);
+        }
+        if(lm35_reading < MAX_TEMP){
+        	BuzzerOFF(1000);
+        	DIO_SetPin_Value(GroupB,PIN2,LOW);
+
         }
         //Light System
         if(photoresistor_reading < MIN_LIGHT){

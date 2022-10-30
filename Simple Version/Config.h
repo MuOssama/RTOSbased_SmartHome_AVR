@@ -11,7 +11,7 @@
 #include "MCAL/DIO/DIO_REG.H"
 
 /*Limits*/
-#define MAX_TEMP                    45
+#define MAX_TEMP                    30
 #define MIN_LIGHT                   600
 #define openangle                   -89
 #define closeangle                  0

@@ -216,7 +216,7 @@ int main() {
            LCD_Send_String("Heavy load 1");
            LCD_GOTOXY(0,1);
            LCD_Send_String("Switched");
-           TOG_BIT(PORTB,2);
+           TOG_BIT(PORTB,4);
            _delay_ms(1000);
            LCD8Bit_Send_Command(0x01);
            }
@@ -258,9 +258,15 @@ int main() {
         }
 
     	//Temperature
-        if(lm35_reading > MAX_TEMP){
+        if(lm35_reading > MAX_TEMP+5){
+        	OCR0 = 150;
+        }
+        if(lm35_reading > MAX_TEMP+10){
+        	OCR0 = 200;
+        }
+        if(lm35_reading > MAX_TEMP+15){
         	BuzzerTOGGLE(1000);
-        	DIO_SetPin_Value(GroupB,PIN2,HIGH);
+        	OCR0 = 255;
         }
         if(lm35_reading < MAX_TEMP){
         	BuzzerOFF(1000);

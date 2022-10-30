@@ -32,7 +32,7 @@
 
 //Buzzer
 #define BuzzerPort                  GroupB
-#define BuzzerPin                   PIN4
+#define BuzzerPin                   PIN3
 
 
 

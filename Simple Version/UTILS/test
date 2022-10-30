@@ -1,0 +1,24 @@
+#include<stdio.h>
+#include"STD_TYPES.h"
+#include"BIT_MATH.h"
+
+void Shift(u8 binary){
+
+
+	for(u8 i = 0;i<8;i++){
+		if(GET_BIT(binary,i)==1)
+                   printf("1");
+		if(GET_BIT(binary,i) == 0)
+                   printf("0");
+		
+
+
+	}
+
+}
+
+u8 main(){
+    Shift(0b01011010);
+    printf("\n%d",GET_BIT(0b01010101,1));
+
+}

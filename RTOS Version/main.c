@@ -240,13 +240,11 @@ void BluetoothRead(char *array) {
 void SensorsReadings(void *pvParameters) {
     
         // Read sensor values
-        if (xSemaphoreTake(xLCD_Semaphore, portMAX_DELAY) == pdTRUE) {
             Sensors[0] = ADC_Read_Sych(2) * 500UL / 65536UL; // LM35
             Sensors[1] = (ADC_Read_Sych(3) * 5000UL) / 65536UL; // photoresistor_reading
             Sensors[2] = (ADC_Read_Sych(4) * 5000UL) / 65536UL; // infrared_reading
             Sensors[3] = ADC_Read_Sych(5) * 5UL / 65536UL; // potentiometer_reading
-            xSemaphoreGive(xLCD_Semaphore);
-        }
+        
         vTaskDelay(400);
     
 }

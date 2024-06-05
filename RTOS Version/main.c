@@ -47,7 +47,8 @@ void Cases(void *pvParameters);
 void UserDemand(void *pvParameters);
 
 int main() {
-    /* Pin Directions */
+    /* Initialize hardware and peripherals */
+   /* Pin Directions */
     DDRA = 0b00000011;
     DDRB = 0b11111111;
     DDRC = 0b11111111;
@@ -178,22 +179,27 @@ int main() {
     // Servo opens (door)
     ServoAngle(openangle);
 
-    // Create tasks
-    xTaskCreate(SensorsReadings, "SensorsReadings", 100, Sensors, 1, NULL);
-    xTaskCreate(SensorsDisplay1, "SensorsDisplay1", 210, Sensors, 1, NULL);
-    xTaskCreate(SensorsDisplay2, "SensorsDisplay2", 210, Sensors, 1, NULL);
-    // xTaskCreate(Cases, "Cases", 210, Sensors, 1, NULL);
-    // xTaskCreate(UserDemand, "UserDemand", 210, command, 1, NULL);
+    xLCD_Semaphore = xSemaphoreCreateMutex();
 
-    // Start the scheduler
+    /* Create tasks */
+    xTaskCreate(SensorsReadings, "SensorsReadings", 100, NULL, 1, NULL);
+    xTaskCreate(SensorsDisplay1, "SensorsDisplay1", 210, NULL, 2, NULL);
+    xTaskCreate(SensorsDisplay2, "SensorsDisplay2", 210, NULL, 2, NULL);
+
     vTaskStartScheduler();
 
     while (1) {
-        // Infinite loop
+        // Main loop, should not be reached
     }
 
     return 0;
 }
+
+/*######################*/
+/*######################*/
+/*###   Interrupts   ###*/
+/*######################*/
+/*######################*/
 
 // Emergency Fire Button on Interrupt 0
 void __vector_1(void) __attribute__((signal));
@@ -209,9 +215,9 @@ void __vector_2(void) {
     BuzzerOFF();
 }
 
-// Bluetooth Get word
+
 void BluetoothRead(char *array) {
-    u8 i = 0;
+  u8 i = 0;
     char ca = '/';
     while (ca != '*') {
         ca = UART_Receive();
@@ -229,52 +235,48 @@ void BluetoothRead(char *array) {
             break;
         }
     }
-}
+  }
 
 void SensorsReadings(void *pvParameters) {
-    u16 *Sensors = (u16 *)pvParameters;
-    while (1) {
-        Sensors[0] = ReadADC(ADC0);
-        Sensors[1] = ReadADC(ADC1);
-        Sensors[2] = ReadADC(ADC2);
-        Sensors[3] = ReadADC(ADC3);
-        vTaskDelay(100);
-    }
+    
+        // Read sensor values
+        if (xSemaphoreTake(xLCD_Semaphore, portMAX_DELAY) == pdTRUE) {
+            Sensors[0] = ADC_Read_Sych(2) * 500UL / 65536UL; // LM35
+            Sensors[1] = (ADC_Read_Sych(3) * 5000UL) / 65536UL; // photoresistor_reading
+            Sensors[2] = (ADC_Read_Sych(4) * 5000UL) / 65536UL; // infrared_reading
+            Sensors[3] = ADC_Read_Sych(5) * 5UL / 65536UL; // potentiometer_reading
+            xSemaphoreGive(xLCD_Semaphore);
+        }
+        vTaskDelay(400);
+    
 }
 
 void SensorsDisplay1(void *pvParameters) {
-    u16 *Sensors = (u16 *)pvParameters;
-    while (1) {
-        LCD_GOTOXY(0, 0);
-        LCD_Send_String("Temp:");
-        LCD_GOTOXY(0, 1);
-        LCD_Send_Int(Sensors[0]);
-        LCD_Send_String("C");
-        LCD_GOTOXY(6, 0);
-        LCD_Send_String("Light:");
-        LCD_GOTOXY(6, 1);
-        LCD_Send_Int(Sensors[1]);
-        _delay_ms(2000);
-        LCD8Bit_Send_Command(0x01);
+    
+        if (xSemaphoreTake(xLCD_Semaphore, portMAX_DELAY) == pdTRUE) {
+            LCD8Bit_Send_Command(0x01);
+            LCD_Send_String("Temperature:");
+            LCD_Send_Int(Sensors[0]);
+            LCD_GOTOXY(0, 1);
+            LCD_Send_String("Fan Speed:");
+            LCD_Send_Int(Sensors[3]);
+            xSemaphoreGive(xLCD_Semaphore);
+        }
         vTaskDelay(1000);
-    }
+    
 }
 
 void SensorsDisplay2(void *pvParameters) {
-    u16 *Sensors = (u16 *)pvParameters;
-    while (1) {
-        LCD_GOTOXY(0, 0);
-        LCD_Send_String("Gas:");
-        LCD_GOTOXY(0, 1);
-        LCD_Send_Int(Sensors[2]);
-        LCD_Send_String("ppm");
-        LCD_GOTOXY(6, 0);
-        LCD_Send_String("Humid:");
-        LCD_GOTOXY(6, 1);
-        LCD_Send_Int(Sensors[3]);
-        LCD_Send_String("%");
-        _delay_ms(2000);
-        LCD8Bit_Send_Command(0x01);
-        vTaskDelay(1000);
-    }
+    
+        if (xSemaphoreTake(xLCD_Semaphore, portMAX_DELAY) == pdTRUE) {
+            LCD8Bit_Send_Command(0x01);
+            LCD_Send_String("LDR:");
+            LCD_Send_Int(Sensors[1]);
+            LCD_GOTOXY(0, 1);
+            LCD_Send_String("Infrared:");
+            LCD_Send_Int(Sensors[2]);
+            xSemaphoreGive(xLCD_Semaphore);
+        }
+        vTaskDelay(1200);
+    
 }
